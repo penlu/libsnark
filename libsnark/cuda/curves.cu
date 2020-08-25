@@ -6,7 +6,7 @@
 
 #include <cuda_runtime.h>
 
-#define BLOCK_SIZE 256
+#define BLOCK_SIZE 1024
 
 void cuda_check_error() {
   cudaError_t err = cudaPeekAtLastError();
@@ -157,61 +157,6 @@ __device__ void cuda_mnt4_G1_add(cuda_mnt4_G1 *r, cuda_mnt4_G1 *a, cuda_mnt4_G1 
   cuda_mnt4_Fq_mul(t15, F, t14);
   cuda_mnt4_Fq_add(t16, t15, t15);
   cuda_mnt4_Fq_add(r->Z, t16, t16);
-
-  /*big_int X1Z2, X2Z1, Y1Z2, Y2Z1;
-  cuda_mnt4_Fq_mul(X1Z2, a->X, b->Z);
-  cuda_mnt4_Fq_mul(X2Z1, a->Z, b->X);
-  cuda_mnt4_Fq_mul(Y1Z2, a->Y, b->Z);
-  cuda_mnt4_Fq_mul(Y2Z1, a->Z, b->Y);
-
-  big_int A, B, R, RR, XX, XX2, Z1Z2, ZZ, h, s, ss, sss, t0, t1, t10, t2, t3, t4, t5, t6, t7, t8, t9, u, uu, v, vv, vvv, w;
-  if (big_int_eq(X1Z2, X2Z1) && big_int_eq(Y1Z2, Y2Z1)) {
-    cuda_mnt4_Fq_mul(XX, a->X, a->X);
-    cuda_mnt4_Fq_mul(ZZ, a->Z, a->Z);
-    cuda_mnt4_Fq_add(XX2, XX, XX);
-    cuda_mnt4_Fq_add(t0, XX, XX2);
-    cuda_mnt4_Fq_mul(t1, mnt4_G1_coeff_a, ZZ);
-    cuda_mnt4_Fq_add(w, t1, t0);
-    cuda_mnt4_Fq_mul(t2, a->Y, a->Z);
-    cuda_mnt4_Fq_add(s, t2, t2);
-    cuda_mnt4_Fq_mul(ss, s, s);
-    cuda_mnt4_Fq_mul(sss, s, ss);
-    cuda_mnt4_Fq_mul(R, a->Y, s);
-    cuda_mnt4_Fq_mul(RR, R, R);
-    cuda_mnt4_Fq_add(t3, a->X, R);
-    cuda_mnt4_Fq_mul(t4, t3, t3);
-    cuda_mnt4_Fq_sub(t5, t4, XX);
-    cuda_mnt4_Fq_sub(B, t5, RR);
-    cuda_mnt4_Fq_mul(t6, w, w);
-    cuda_mnt4_Fq_add(t7, B, B);
-    cuda_mnt4_Fq_sub(h, t6, t7);
-    cuda_mnt4_Fq_mul(r->X, h, s);
-    cuda_mnt4_Fq_sub(t8, B, h);
-    cuda_mnt4_Fq_add(t9, RR, RR);
-    cuda_mnt4_Fq_mul(t10, w, t8);
-    cuda_mnt4_Fq_sub(r->Y, t10, t9);
-    cuda_mnt4_Fq_sub(r->Z, t10, t9);
-  } else {
-    cuda_mnt4_Fq_mul(Z1Z2, a->Z, b->Z);
-    cuda_mnt4_Fq_mul(t0, b->Y, a->Z);
-    cuda_mnt4_Fq_sub(u, t0, Y1Z2);
-    cuda_mnt4_Fq_mul(uu, u, u);
-    cuda_mnt4_Fq_mul(t1, b->X, a->Z);
-    cuda_mnt4_Fq_sub(v, t1, X1Z2);
-    cuda_mnt4_Fq_mul(vv, v, v);
-    cuda_mnt4_Fq_mul(vvv, v, vv);
-    cuda_mnt4_Fq_mul(R, vv, X1Z2);
-    cuda_mnt4_Fq_add(t2, R, R);
-    cuda_mnt4_Fq_mul(t3, uu, Z1Z2);
-    cuda_mnt4_Fq_sub(t4, t3, vvv);
-    cuda_mnt4_Fq_sub(A, t4, t2);
-    cuda_mnt4_Fq_mul(r->X, v, A);
-    cuda_mnt4_Fq_sub(t5, R, A);
-    cuda_mnt4_Fq_mul(t6, vvv, Y1Z2);
-    cuda_mnt4_Fq_mul(t7, u, t5);
-    cuda_mnt4_Fq_sub(r->Y, t7, t6);
-    cuda_mnt4_Fq_mul(r->Z, vvv, Z1Z2);
-  }*/
 }
 
 // r = a * s
@@ -230,27 +175,15 @@ __device__ void cuda_mnt4_G1_mul(cuda_mnt4_G1 *r, cuda_mnt4_G1 *a, big_int s) {
   }
 }
 
+// d_res[i] = d_vec[i]^d_scalar[i]
 __global__ void mnt4_G1_multi_exp_kernel(int len, cuda_mnt4_G1 *d_res, cuda_mnt4_G1 *d_vec, big_int *d_scalar) {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i < len) {
-    //big_int res;
-    //cuda_mnt4_Fq_mul(res, d_scalar[i], d_scalar[i]);
-    //printf("Thread %d d_vec %d d_scalar %d square %d\n", i, d_vec[i].X[0], d_scalar[i][0], res[0]);
-
-    //printf("Thread %d d_vec %d is_zero %d\n", i, d_vec[i].X[0], cuda_mnt4_G1_is_zero(&d_vec[i]));
-
-    //cuda_mnt4_G1 res;
-    //cuda_mnt4_G1_add(&res, &d_vec[i], &d_vec[i]);
-    //printf("Thread %d d_vec %d d_scalar %d add %d\n", i, d_vec[i].X[0], d_scalar[i][0], res.X[0]);
-
-    //cuda_mnt4_G1 res;
-    //cuda_mnt4_G1_mul(&res, &d_vec[i], d_scalar[i]);
-    //printf("Thread %d d_vec %d d_scalar %d mul %d\n", i, d_vec[i].X[0], d_scalar[i][0], res.X[0]);
-
     cuda_mnt4_G1_mul(&d_res[i], &d_vec[i], d_scalar[i]);
   }
 }
 
+// d_res = sum(d_vec) (in fact blockwise, so d_vec[i] is the sum of the ith block)
 __global__ void mnt4_G1_reduce_kernel(int len, cuda_mnt4_G1 *d_res, cuda_mnt4_G1 *d_vec) {
   extern __shared__ cuda_mnt4_G1 data[];
 
@@ -277,37 +210,29 @@ __global__ void mnt4_G1_reduce_kernel(int len, cuda_mnt4_G1 *d_res, cuda_mnt4_G1
 cuda_mnt4_G1 *mnt4_G1_multi_exp_cuda(int len, cuda_mnt4_G1 *d_vec, big_int *d_scalar) {
   int grid_size = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
-  cuda_mnt4_G1 *d_res, *d_sum;
-  cudaMalloc(&d_res, sizeof(cuda_mnt4_G1) * len);
+  cuda_mnt4_G1 *d_exp, *d_sum;
+  cudaMalloc(&d_exp, sizeof(cuda_mnt4_G1) * len);
   cudaMalloc(&d_sum, sizeof(cuda_mnt4_G1) * grid_size);
 
   printf("len is %d\n", len);
   cudaDeviceSetLimit(cudaLimitPrintfFifoSize, 0xffffffff);
 
-  mnt4_G1_multi_exp_kernel<<<grid_size, BLOCK_SIZE>>>(len, d_res, d_vec, d_scalar);
+  mnt4_G1_multi_exp_kernel<<<grid_size, BLOCK_SIZE>>>(len, d_exp, d_vec, d_scalar);
   cuda_check_error();
 
-  //mnt4_G1_reduce_kernel<<<grid_size, BLOCK_SIZE>>>(len, d_sum, d_vec);
-  //cuda_check_error();
+  mnt4_G1_reduce_kernel<<<grid_size, BLOCK_SIZE>>>(len, d_sum, d_vec);
+  cuda_check_error();
 
   cuda_mnt4_G1 *sum = (cuda_mnt4_G1 *) malloc(sizeof(cuda_mnt4_G1) * grid_size);
   cudaMemcpy(sum, d_sum, sizeof(cuda_mnt4_G1) * grid_size, cudaMemcpyDeviceToHost);
 
-  //cuda_mnt4_G1 *vec = (cuda_mnt4_G1 *) malloc(sizeof(cuda_mnt4_G1) * len);
-  //cudaMemcpy(vec, d_res, sizeof(cuda_mnt4_G1) * len, cudaMemcpyDeviceToHost);
-
-  cuda_mnt4_G1 res = cuda_mnt4_G1_zero;
-  // TODO
-  /*for (int i = 0; i < grid_size; i++) {
-    cuda_mnt4_G1_add(&res, &res, &sum[i]);
-  }*/
-
-  cudaFree(d_res);
+  cudaFree(d_exp);
   cudaFree(d_sum);
 
-  /*printf("%d %d\n", sum[0].X[0], vec[0].X[0]);
-  for (int i = 0; i < 100; i++) {
-    printf("%d\n", vec[i].X[0]);
+  cuda_mnt4_G1 res = cuda_mnt4_G1_zero;
+  // TODO convert back to normal point format
+  /*for (int i = 0; i < grid_size; i++) {
+    cuda_mnt4_G1_add(&res, &res, &sum[i]);
   }*/
 
   return sum;
