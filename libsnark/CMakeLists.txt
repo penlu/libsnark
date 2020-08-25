@@ -40,6 +40,8 @@ add_library(
   relations/ram_computations/memory/ra_memory.cpp
   relations/ram_computations/rams/fooram/fooram_aux.cpp
   relations/ram_computations/rams/tinyram/tinyram_aux.cpp
+  cuda/big_int.cu
+  cuda/curves.cu
 )
 if("${USE_LINKED_LIBRARIES}")
   target_link_libraries(
@@ -78,6 +80,7 @@ install(
   FILES_MATCHING
   PATTERN "*.hpp"
   PATTERN "*.tcc"
+  PATTERN "*.cu"
   PATTERN "tests" EXCLUDE
   PATTERN "examples" EXCLUDE
 )

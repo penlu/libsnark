@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project (libsnark)
+project(libsnark LANGUAGES C CXX CUDA)
 
 set(
   CURVE
@@ -123,6 +123,8 @@ set(
   CMAKE_CXX_FLAGS
   "${CMAKE_CXX_FLAGS} ${OPT_FLAGS}"
 )
+
+set(CMAKE_CUDA_FLAGS "-arch=sm_61 -Xptxas -O3,-v -maxrregcount 64")
 
 # GMP
 find_path(GMP_INCLUDE_DIR NAMES gmp.h)

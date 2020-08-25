@@ -20,6 +20,7 @@ See r1cs_ppzksnark.hpp .
 #include <iostream>
 #include <sstream>
 
+#include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
 #include <libff/algebra/scalar_multiplication/multiexp.hpp>
 #include <libff/common/profiling.hpp>
 #include <libff/common/utils.hpp>
@@ -30,6 +31,7 @@ See r1cs_ppzksnark.hpp .
 
 #include <libsnark/knowledge_commitment/kc_multiexp.hpp>
 #include <libsnark/reductions/r1cs_to_qap/r1cs_to_qap.hpp>
+#include <libsnark/cuda/multiexp_cuda.tcc>
 
 namespace libsnark {
 
@@ -426,6 +428,12 @@ r1cs_ppzksnark_keypair<ppT> r1cs_ppzksnark_generator(const r1cs_ppzksnark_constr
     return r1cs_ppzksnark_keypair<ppT>(std::move(pk), std::move(vk));
 }
 
+libff::mnt4_G1 specialized_multi_exp(std::vector<libff::mnt4_G1>::const_iterator vec_start,
+            std::vector<libff::mnt4_G1>::const_iterator vec_end,
+            std::vector<libff::mnt4_Fr>::const_iterator scalar_start,
+            std::vector<libff::mnt4_Fr>::const_iterator scalar_end,
+            const size_t chunks);
+
 template <typename ppT>
 r1cs_ppzksnark_proof<ppT> r1cs_ppzksnark_prover(const r1cs_ppzksnark_proving_key<ppT> &pk,
                                                 const r1cs_ppzksnark_primary_input<ppT> &primary_input,
@@ -517,11 +525,23 @@ r1cs_ppzksnark_proof<ppT> r1cs_ppzksnark_prover(const r1cs_ppzksnark_proving_key
     libff::enter_block("Compute answer to H-query", false);
     g_H = g_H + libff::multi_exp<libff::G1<ppT>,
                                  libff::Fr<ppT>,
+                                 libff::multi_exp_method_cuda>(
+        pk.H_query.begin(), pk.H_query.begin()+qap_wit.degree()+1,
+        qap_wit.coefficients_for_H.begin(), qap_wit.coefficients_for_H.begin()+qap_wit.degree()+1,
+        chunks);
+    libff::leave_block("Compute answer to H-query", false);
+
+    libff::enter_block("Compute answer to H-query", false);
+    g_H = g_H + libff::multi_exp<libff::G1<ppT>,
+                                 libff::Fr<ppT>,
                                  libff::multi_exp_method_BDLO12>(
         pk.H_query.begin(), pk.H_query.begin()+qap_wit.degree()+1,
         qap_wit.coefficients_for_H.begin(), qap_wit.coefficients_for_H.begin()+qap_wit.degree()+1,
         chunks);
     libff::leave_block("Compute answer to H-query", false);
+
+    std::cout << "TEST OVER" << std::endl;
+    std::exit(0);
 
     libff::enter_block("Compute answer to K-query", false);
     g_K = g_K + libff::multi_exp_with_mixed_addition<libff::G1<ppT>,
