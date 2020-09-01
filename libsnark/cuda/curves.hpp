@@ -3,7 +3,11 @@
 
 #include <libsnark/cuda/big_int.hpp>
 
-struct cuda_mnt4_G1;
+struct cuda_mnt4_G1 {
+  big_int X;
+  big_int Y;
+  big_int Z;
+};
 
 cuda_mnt4_G1 *mnt4_G1_multi_exp_cuda(int, cuda_mnt4_G1 *, big_int *);
 cuda_mnt4_G1 *mnt4_G1_to_gpu(std::vector<libff::mnt4_G1>::const_iterator, std::vector<libff::mnt4_G1>::const_iterator);
@@ -36,3 +40,7 @@ struct cuda_knowledge_commitment {
   cuda_knowledge_commitment<T1,T2>(const cuda_knowledge_commitment<T1,T2> &other) = default;
   cuda_knowledge_commitment<T1,T2>(const T1 &g, const T2 &h);
 };*/
+
+void cuda_mnt4_Fq_mul_test(int n, big_int *r, big_int *a, big_int *b);
+void cuda_mnt4_Fq_add_test(int n, big_int *r, big_int *a, big_int *b);
+void cuda_mnt4_G1_add_test(int n, cuda_mnt4_G1 *r, cuda_mnt4_G1 *a, cuda_mnt4_G1 *b);

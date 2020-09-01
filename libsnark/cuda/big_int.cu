@@ -57,34 +57,30 @@ __device__ int big_int_is_zero(big_int a) {
 
 // r = a * b * R^-1 mod m
 // implements CIOS montgomery multiplication for R = 2^(32 * GPU_N_LIMBS)
-// m is the modulus; inv_m should be -1/m[0] (mod R)
+// m is the modulus; inv_m should be -1/m[0] (mod 2^32)
 __device__ void big_int_mulred(big_int r, big_int a, big_int b, big_int m, uint32_t inv_m) {
   uint64_t overflow; // effectively limb GPU_N_LIMBS and (GPU_N_LIMBS + 1) of r
   for (int i = 0; i < GPU_N_LIMBS; i++) {
-    uint32_t c = 0;
+    r[i] = 0;
+  }
+  for (int i = 0; i < GPU_N_LIMBS; i++) {
+    uint64_t x = 0;
     for (int j = 0; j < GPU_N_LIMBS; j++) {
-      uint64_t x = (uint64_t) a[j] * b[i] + c + r[j];
-      c = x >> 32;
+      x = (uint64_t) a[j] * b[i] + (x >> 32) + r[j];
       r[j] = x & 0xffffffff;
     }
 
-    overflow = (overflow & 0xffffffff) + c;
+    overflow = (overflow & 0xffffffff) + (x >> 32);
 
-    c = 0;
     uint32_t k = r[0] * inv_m;
-    for (int j = 0; j < GPU_N_LIMBS; j++) {
-      uint64_t x = (uint64_t) k * m[j] + r[j] + c;
-      c = x >> 32;
-      r[j] = x & 0xffffffff;
-    }
-
+    x = (uint64_t) k * m[0] + r[0];
     for (int j = 1; j < GPU_N_LIMBS; j++) {
-      r[j - 1] = r[j];
+      x = (uint64_t) k * m[j] + r[j] + (x >> 32);
+      r[j - 1] = x & 0xffffffff;
     }
 
-    asm ("add.cc.u32 %0, %1, %2;": "=r"(r[GPU_N_LIMBS - 1]):
-      "r"((uint32_t) (overflow & 0xffffffff)), "r"(c));
-    asm ("addc.u32 %0, %1, 0;": "=r"(c): "r"((uint32_t) (overflow >> 32)));
-    overflow = c;
+    x = (overflow & 0xffffffff) + (x >> 32);
+    r[GPU_N_LIMBS - 1] = (x & 0xffffffff);
+    overflow = (overflow >> 32) + (x >> 32);
   }
 }

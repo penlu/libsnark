@@ -124,7 +124,7 @@ set(
   "${CMAKE_CXX_FLAGS} ${OPT_FLAGS}"
 )
 
-set(CMAKE_CUDA_FLAGS "-arch=sm_61 -Xptxas -O3,-v -maxrregcount 64")
+set(CMAKE_CUDA_FLAGS "-gencode arch=compute_61,code=sm_61 -gencode arch=compute_75,code=sm_75 -Xptxas -O3,-v")
 
 # GMP
 find_path(GMP_INCLUDE_DIR NAMES gmp.h)

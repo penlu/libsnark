@@ -19,6 +19,7 @@
 #include <libff/algebra/scalar_multiplication/multiexp.tcc>
 
 #include <cuda_runtime.h>
+#include <cuda_profiler_api.h>
 #include <libsnark/cuda/curves.hpp>
 #include <libsnark/cuda/big_int.hpp>
 
@@ -35,6 +36,8 @@ mnt4_G1 multi_exp_inner<mnt4_G1, mnt4_Fr, multi_exp_method_cuda>(
 
     size_t len = vec_end - vec_start;
 
+    //cudaProfilerStart();
+
     // transfer data to GPU
     libff::enter_block("multi_exp data transfer", false);
     cuda_mnt4_G1 *d_vec = mnt4_G1_to_gpu(vec_start, vec_end);
@@ -43,11 +46,43 @@ mnt4_G1 multi_exp_inner<mnt4_G1, mnt4_Fr, multi_exp_method_cuda>(
 
     // call GPU exponentiation kernel
     libff::enter_block("multi_exp CUDA time!", false);
-    cuda_mnt4_G1 *res = mnt4_G1_multi_exp_cuda(len, d_vec, d_scalar);
+    cuda_mnt4_G1 *sum = mnt4_G1_multi_exp_cuda(len, d_vec, d_scalar);
     libff::leave_block("multi_exp CUDA time!", false);
 
     cudaFree(d_vec);
     cudaFree(d_scalar);
+
+    // finish the sum
+    libff::enter_block("multi_exp final sum time!", false);
+    /*for (int i = 0; i < len; i++) {
+      mnt4_Fq X, Y, Z;
+      for (int j = 0; j < 5; j++) {
+        X.mont_repr.data[j] = (((uint64_t) sum[i].X[2*j + 1]) << 32) | sum[i].X[2*j];
+        Y.mont_repr.data[j] = (((uint64_t) sum[i].Y[2*j + 1]) << 32) | sum[i].Y[2*j];
+        Z.mont_repr.data[j] = (((uint64_t) sum[i].Z[2*j + 1]) << 32) | sum[i].Z[2*j];
+      }
+
+      mnt4_G1 pt(X, Y, Z);
+      pt.print_coordinates();
+    }*/
+    for (int i = 0; i < (len + 128 - 1) / 128; i++) {
+      mnt4_Fq X, Y, Z;
+      for (int j = 0; j < 5; j++) {
+        X.mont_repr.data[j] = (((uint64_t) sum[i].X[2*j + 1]) << 32) | sum[i].X[2*j];
+        Y.mont_repr.data[j] = (((uint64_t) sum[i].Y[2*j + 1]) << 32) | sum[i].Y[2*j];
+        Z.mont_repr.data[j] = (((uint64_t) sum[i].Z[2*j + 1]) << 32) | sum[i].Z[2*j];
+      }
+
+      mnt4_G1 pt(X, Y, Z);
+      result = result + pt;
+    }
+    libff::leave_block("multi_exp final sum time!", false);
+
+    free(sum);
+
+    cudaDeviceSynchronize();
+    //cudaProfilerStop();
+    cudaDeviceReset();
 
     //std::cout << "HELLO THERE!!!" << std::endl;
     //std::exit(0);

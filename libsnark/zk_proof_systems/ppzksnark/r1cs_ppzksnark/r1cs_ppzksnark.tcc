@@ -523,21 +523,46 @@ r1cs_ppzksnark_proof<ppT> r1cs_ppzksnark_prover(const r1cs_ppzksnark_proving_key
     libff::leave_block("Compute answer to C-query", false);
 
     libff::enter_block("Compute answer to H-query", false);
-    g_H = g_H + libff::multi_exp<libff::G1<ppT>,
+    libff::G1<ppT> intermediate = libff::multi_exp<libff::G1<ppT>,
                                  libff::Fr<ppT>,
                                  libff::multi_exp_method_cuda>(
         pk.H_query.begin(), pk.H_query.begin()+qap_wit.degree()+1,
         qap_wit.coefficients_for_H.begin(), qap_wit.coefficients_for_H.begin()+qap_wit.degree()+1,
         chunks);
+    intermediate.print_coordinates();
     libff::leave_block("Compute answer to H-query", false);
 
     libff::enter_block("Compute answer to H-query", false);
-    g_H = g_H + libff::multi_exp<libff::G1<ppT>,
+#ifdef PROFILE_OP_COUNTS
+    std::cout << "BEFORE COMPUTE: adds: " << libff::mnt4_G1::add_cnt << " mixed_adds: " << libff::mnt4_G1::mixed_add_cnt << " pluses: " << libff::mnt4_G1::plus_cnt << " dbls: " << libff::mnt4_G1::dbl_cnt << std::endl;
+#endif
+    intermediate = libff::multi_exp<libff::G1<ppT>,
+                                 libff::Fr<ppT>,
+                                 libff::multi_exp_method_naive_plain>(
+        pk.H_query.begin(), pk.H_query.begin()+qap_wit.degree()+1,
+        qap_wit.coefficients_for_H.begin(), qap_wit.coefficients_for_H.begin()+qap_wit.degree()+1,
+        chunks);
+    intermediate.print_coordinates();
+#ifdef PROFILE_OP_COUNTS
+    std::cout << "AFTER COMPUTE: adds: " << libff::mnt4_G1::add_cnt << " mixed_adds: " << libff::mnt4_G1::mixed_add_cnt << " pluses: " << libff::mnt4_G1::plus_cnt << " dbls: " << libff::mnt4_G1::dbl_cnt << std::endl;
+#endif
+    libff::leave_block("Compute answer to H-query", false);
+
+    libff::enter_block("Compute answer to H-query", false);
+#ifdef PROFILE_OP_COUNTS
+    std::cout << "BEFORE COMPUTE: adds: " << libff::mnt4_G1::add_cnt << " mixed_adds: " << libff::mnt4_G1::mixed_add_cnt << " pluses: " << libff::mnt4_G1::plus_cnt << " dbls: " << libff::mnt4_G1::dbl_cnt << std::endl;
+#endif
+    intermediate = libff::multi_exp<libff::G1<ppT>,
                                  libff::Fr<ppT>,
                                  libff::multi_exp_method_BDLO12>(
         pk.H_query.begin(), pk.H_query.begin()+qap_wit.degree()+1,
         qap_wit.coefficients_for_H.begin(), qap_wit.coefficients_for_H.begin()+qap_wit.degree()+1,
         chunks);
+    intermediate.print_coordinates();
+#ifdef PROFILE_OP_COUNTS
+    std::cout << "AFTER COMPUTE: adds: " << libff::mnt4_G1::add_cnt << " mixed_adds: " << libff::mnt4_G1::mixed_add_cnt << " pluses: " << libff::mnt4_G1::plus_cnt << " dbls: " << libff::mnt4_G1::dbl_cnt << std::endl;
+#endif
+    g_H = g_H + intermediate;
     libff::leave_block("Compute answer to H-query", false);
 
     std::cout << "TEST OVER" << std::endl;
