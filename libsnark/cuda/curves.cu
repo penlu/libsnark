@@ -66,12 +66,22 @@ void cuda_mnt4_Fq_add_test(int n, big_int *r, big_int *a, big_int *b) {
 }
 
 __device__ void cuda_mnt4_Fq_sub(big_int r, big_int a, big_int b) {
-  // not the most efficient
-  big_int_add(r, a, mnt4_Fq_modulus);
-  big_int_sub(r, r, b);
+  big_int_sub(r, a, b);
   if (!big_int_lt(r, mnt4_Fq_modulus)) {
-    big_int_sub(r, r, mnt4_Fq_modulus);
+    big_int_add(r, r, mnt4_Fq_modulus);
   }
+}
+
+__global__ void cuda_mnt4_Fq_sub_kernel(int n, big_int *r, big_int *a, big_int *b) {
+  int i = threadIdx.x;
+  if (i < n) {
+    cuda_mnt4_Fq_sub(r[i], a[i], b[i]);
+  }
+}
+
+void cuda_mnt4_Fq_sub_test(int n, big_int *r, big_int *a, big_int *b) {
+  int grid_size = (n + 127) / 128;
+  cuda_mnt4_Fq_sub_kernel<<<grid_size, 128>>>(n, r, a, b);
 }
 
 // assume inputs in montgomery representation
@@ -102,19 +112,40 @@ __device__ void cuda_mnt4_G1_dbl(cuda_mnt4_G1 *r, cuda_mnt4_G1 *a) {
       r->Y[i] = a->Y[i];
       r->Z[i] = a->Z[i];
     }
+    return;
   }
 
-  big_int B, R, RR, XX, XX2, ZZ, h, s, ss, sss, t0, t1, t10, t2, t3, t4, t5, t6, t7, t8, t9, w;
+  big_int B, R, RR, XX, XX2, ZZ, h, s, ss, t0, t1, t10, t2, t3, t4, t5, t6, t7, t8, t9, w;
   cuda_mnt4_Fq_mul(XX, a->X, a->X);
   cuda_mnt4_Fq_mul(ZZ, a->Z, a->Z);
   cuda_mnt4_Fq_add(XX2, XX, XX);
   cuda_mnt4_Fq_add(t0, XX, XX2);
   cuda_mnt4_Fq_add(t1, ZZ, ZZ);
   cuda_mnt4_Fq_add(w, t1, t0);
+  printf("GPU a.Y: ");
+  for (int i = GPU_N_LIMBS - 1; i >= 0; i--) {
+    printf("%08x ", a->Y[i]);
+  }
+  printf("\n");
+  printf("GPU a.Z: ");
+  for (int i = GPU_N_LIMBS - 1; i >= 0; i--) {
+    printf("%08x ", a->Z[i]);
+  }
+  printf("\n");
   cuda_mnt4_Fq_mul(t2, a->Y, a->Z);
+  printf("GPU Y1Z1: ");
+  for (int i = GPU_N_LIMBS - 1; i >= 0; i--) {
+    printf("%08x ", t2[i]);
+  }
+  printf("\n");
   cuda_mnt4_Fq_add(s, t2, t2);
+  /*printf("GPU s: ");
+  for (int i = GPU_N_LIMBS - 1; i >= 0; i--) {
+    printf("%08x ", s[i]);
+  }
+  printf("\n");*/
   cuda_mnt4_Fq_mul(ss, s, s);
-  cuda_mnt4_Fq_mul(sss, s, ss);
+  cuda_mnt4_Fq_mul(r->Z, s, ss);
   cuda_mnt4_Fq_mul(R, a->Y, s);
   cuda_mnt4_Fq_mul(RR, R, R);
   cuda_mnt4_Fq_add(t3, a->X, R);
@@ -129,25 +160,29 @@ __device__ void cuda_mnt4_G1_dbl(cuda_mnt4_G1 *r, cuda_mnt4_G1 *a) {
   cuda_mnt4_Fq_add(t9, RR, RR);
   cuda_mnt4_Fq_mul(t10, w, t8);
   cuda_mnt4_Fq_sub(r->Y, t10, t9);
-  cuda_mnt4_Fq_sub(r->Z, t10, t9);
 }
 
 __device__ void cuda_mnt4_G1_add(cuda_mnt4_G1 *r, cuda_mnt4_G1 *a, cuda_mnt4_G1 *b) {
+  cuda_mnt4_G1_dbl(r, a);
+  return;
+
   if (cuda_mnt4_G1_is_zero(a)) {
     for (int i = 0; i < GPU_N_LIMBS; i++) {
       r->X[i] = b->X[i];
       r->Y[i] = b->Y[i];
       r->Z[i] = b->Z[i];
     }
+    return;
   } else if (cuda_mnt4_G1_is_zero(b)) {
     for (int i = 0; i < GPU_N_LIMBS; i++) {
       r->X[i] = a->X[i];
       r->Y[i] = a->Y[i];
       r->Z[i] = a->Z[i];
     }
+    return;
   }
 
-  big_int F, G, L, LL, M, R, S1, S2, T, TT, U1, U2, W, ZZ, t0, t1, t10, t11, t12, t13, t14, t15, t16, t2, t3, t4, t5, t6, t7, t8, t9;
+  /*big_int F, G, L, LL, M, R, S1, S2, T, TT, U1, U2, W, ZZ, t0, t1, t10, t11, t12, t13, t14, t15, t16, t2, t3, t4, t5, t6, t7, t8, t9;
   cuda_mnt4_Fq_mul(U1, a->X, b->Z);
   cuda_mnt4_Fq_mul(U2, b->X, a->Z);
   cuda_mnt4_Fq_mul(S1, a->Y, b->Z);
@@ -181,7 +216,60 @@ __device__ void cuda_mnt4_G1_add(cuda_mnt4_G1 *r, cuda_mnt4_G1 *a, cuda_mnt4_G1 
   cuda_mnt4_Fq_mul(t14, F, F);
   cuda_mnt4_Fq_mul(t15, F, t14);
   cuda_mnt4_Fq_add(t16, t15, t15);
-  cuda_mnt4_Fq_add(r->Z, t16, t16);
+  cuda_mnt4_Fq_add(r->Z, t16, t16);*/
+
+  big_int A, B, R, RR, X1Z2, XX, XX2, Y1Z2, Z1Z2, ZZ, h, s, ss, t0, t1, t10, t2, t3, t4, t5, t6, t7, t8, t9, u, uu, v, vv, vvv, w;
+  big_int X2Z1, Y2Z1;
+
+  cuda_mnt4_Fq_mul(X1Z2, a->X, b->Z);
+  cuda_mnt4_Fq_mul(Y1Z2, a->Y, b->Z);
+  cuda_mnt4_Fq_mul(X2Z1, a->Z, b->X);
+  cuda_mnt4_Fq_mul(Y2Z1, a->Z, b->Y);
+
+  if (big_int_eq(X1Z2, X2Z1) && big_int_eq(Y1Z2, Y2Z1)) {
+    cuda_mnt4_Fq_mul(XX, a->X, a->X);
+    cuda_mnt4_Fq_mul(ZZ, a->Z, a->Z);
+    cuda_mnt4_Fq_add(XX2, XX, XX);
+    cuda_mnt4_Fq_add(t0, XX, XX2);
+    cuda_mnt4_Fq_add(t1, ZZ, ZZ);
+    cuda_mnt4_Fq_add(w, t1, t0);
+    cuda_mnt4_Fq_mul(t2, a->Y, a->Z);
+    cuda_mnt4_Fq_add(s, t2, t2);
+    cuda_mnt4_Fq_mul(ss, s, s);
+    cuda_mnt4_Fq_mul(r->Z, s, ss);
+    cuda_mnt4_Fq_mul(R, a->Y, s);
+    cuda_mnt4_Fq_mul(RR, R, R);
+    cuda_mnt4_Fq_add(t3, a->X, R);
+    cuda_mnt4_Fq_mul(t4, t3, t3);
+    cuda_mnt4_Fq_sub(t5, t4, XX);
+    cuda_mnt4_Fq_sub(B, t5, RR);
+    cuda_mnt4_Fq_mul(t6, w, w);
+    cuda_mnt4_Fq_add(t7, B, B);
+    cuda_mnt4_Fq_sub(h, t6, t7);
+    cuda_mnt4_Fq_mul(r->X, h, s);
+    cuda_mnt4_Fq_sub(t8, B, h);
+    cuda_mnt4_Fq_add(t9, RR, RR);
+    cuda_mnt4_Fq_mul(t10, w, t8);
+    cuda_mnt4_Fq_sub(r->Y, t10, t9);
+  } else {
+    cuda_mnt4_Fq_mul(Z1Z2, a->Z, b->Z);
+    cuda_mnt4_Fq_sub(u, Y2Z1, Y1Z2);
+    cuda_mnt4_Fq_mul(uu, u, u);
+    cuda_mnt4_Fq_sub(v, X2Z1, X1Z2);
+    cuda_mnt4_Fq_mul(vv, v, v);
+    cuda_mnt4_Fq_mul(vvv, v, vv);
+    cuda_mnt4_Fq_mul(R, vv, X1Z2);
+    cuda_mnt4_Fq_add(t2, R, R);
+    cuda_mnt4_Fq_mul(t3, uu, Z1Z2);
+    cuda_mnt4_Fq_sub(t4, t3, vvv);
+    cuda_mnt4_Fq_sub(A, t4, t2);
+    cuda_mnt4_Fq_mul(r->X, v, A);
+    cuda_mnt4_Fq_sub(t5, R, A);
+    cuda_mnt4_Fq_mul(t6, vvv, Y1Z2);
+    cuda_mnt4_Fq_mul(t7, u, t5);
+    cuda_mnt4_Fq_sub(r->Y, t7, t6);
+    cuda_mnt4_Fq_mul(r->Z, vvv, Z1Z2);
+  }
 }
 
 __global__ void cuda_mnt4_G1_add_kernel(int n, cuda_mnt4_G1 *r, cuda_mnt4_G1 *a, cuda_mnt4_G1 *b) {

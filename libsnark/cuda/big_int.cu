@@ -81,6 +81,6 @@ __device__ void big_int_mulred(big_int r, big_int a, big_int b, big_int m, uint3
 
     x = (overflow & 0xffffffff) + (x >> 32);
     r[GPU_N_LIMBS - 1] = (x & 0xffffffff);
-    overflow = (overflow >> 32) + (x >> 32);
+    overflow = ((overflow >> 32) + (x >> 32)) & 0xffffffff;
   }
 }

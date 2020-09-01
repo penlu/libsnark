@@ -43,4 +43,5 @@ struct cuda_knowledge_commitment {
 
 void cuda_mnt4_Fq_mul_test(int n, big_int *r, big_int *a, big_int *b);
 void cuda_mnt4_Fq_add_test(int n, big_int *r, big_int *a, big_int *b);
+void cuda_mnt4_Fq_sub_test(int n, big_int *r, big_int *a, big_int *b);
 void cuda_mnt4_G1_add_test(int n, cuda_mnt4_G1 *r, cuda_mnt4_G1 *a, cuda_mnt4_G1 *b);

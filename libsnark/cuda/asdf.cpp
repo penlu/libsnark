@@ -15,7 +15,8 @@ const big_int Rinv = {0x62c6ae8b, 0x5d0dfbf7, 0x8d649ad1, 0x420e2c96, 0x31b3038d
 
 // test numbers
 const big_int a[10] = {
-  {0x2265b1f5, 0x91b7584a, 0xd8f16adf, 0xcd613e30, 0xc386bbc4, 0x1027c4d1, 0x414c343c, 0x1e2feb89, 0x7ed4d57b, 0x30b},
+  {0xdec3207d, 0x7a1a14f4, 0xe01d86d3, 0x87975c3e, 0x85a378e8, 0xf599a220, 0x7936f0f8, 0xd3ac7549, 0x5ae096e4, 0x0000037f},
+  //{0x2265b1f5, 0x91b7584a, 0xd8f16adf, 0xcd613e30, 0xc386bbc4, 0x1027c4d1, 0x414c343c, 0x1e2feb89, 0x7ed4d57b, 0x30b},
   {0xd5f4b3b2, 0x63ca828d, 0x6ec9d286, 0x9b810e76, 0xc324c985, 0xc4647159, 0x8a05a6, 0xb2221a58, 0x7204e52d, 0x110},
   {0x6c0fd4f5, 0xb9d179e0, 0x76f3787, 0x8712b8bc, 0x38c0c8fd, 0xc381e88f, 0x701966a0, 0xf06d3fef, 0x7eed8d14, 0x236},
   {0x5805975, 0x6a8ac4ba, 0xd66b829e, 0xea90a8f0, 0x8e73ca47, 0xec148cb4, 0xa46d6753, 0x19999e3f, 0x2f978d87, 0x284},
@@ -28,6 +29,18 @@ const big_int a[10] = {
 };
 
 const big_int b[10] = {
+  {0x5863845c, 0x18c31a7b, 0xe3b68df5, 0xe9de7a15, 0x28faab40, 0xc5df8587, 0x647b5197, 0x29184098, 0x223d33c3, 0x000001c1},
+  {0x5863845c, 0x18c31a7b, 0xe3b68df5, 0xe9de7a15, 0x28faab40, 0xc5df8587, 0x647b5197, 0x29184098, 0x223d33c3, 0x000001c1},
+  {0x5863845c, 0x18c31a7b, 0xe3b68df5, 0xe9de7a15, 0x28faab40, 0xc5df8587, 0x647b5197, 0x29184098, 0x223d33c3, 0x000001c1},
+  {0x5863845c, 0x18c31a7b, 0xe3b68df5, 0xe9de7a15, 0x28faab40, 0xc5df8587, 0x647b5197, 0x29184098, 0x223d33c3, 0x000001c1},
+  {0x5863845c, 0x18c31a7b, 0xe3b68df5, 0xe9de7a15, 0x28faab40, 0xc5df8587, 0x647b5197, 0x29184098, 0x223d33c3, 0x000001c1},
+  {0x5863845c, 0x18c31a7b, 0xe3b68df5, 0xe9de7a15, 0x28faab40, 0xc5df8587, 0x647b5197, 0x29184098, 0x223d33c3, 0x000001c1},
+  {0x5863845c, 0x18c31a7b, 0xe3b68df5, 0xe9de7a15, 0x28faab40, 0xc5df8587, 0x647b5197, 0x29184098, 0x223d33c3, 0x000001c1},
+  {0x5863845c, 0x18c31a7b, 0xe3b68df5, 0xe9de7a15, 0x28faab40, 0xc5df8587, 0x647b5197, 0x29184098, 0x223d33c3, 0x000001c1},
+  {0x5863845c, 0x18c31a7b, 0xe3b68df5, 0xe9de7a15, 0x28faab40, 0xc5df8587, 0x647b5197, 0x29184098, 0x223d33c3, 0x000001c1},
+  {0x5863845c, 0x18c31a7b, 0xe3b68df5, 0xe9de7a15, 0x28faab40, 0xc5df8587, 0x647b5197, 0x29184098, 0x223d33c3, 0x000001c1},
+};
+/*const big_int b[10] = {
   {0x7311d8a3, 0x78e51061, 0xa6cecc1b, 0x612e7696, 0xc9e9c616, 0x35bf992d, 0x18072e8c, 0x7ce42c82, 0x741c7a8, 0x392},
   {0xb8b6d8fe, 0xcd447e35, 0x3a902931, 0x9755d4c1, 0xf1fd42a2, 0x1a2b8f1f, 0xe6c3f339, 0x51431193, 0x7d4bedc, 0x16},
   {0x3bab6c39, 0x587fd280, 0x3b1a11df, 0xad45f23d, 0x380208a9, 0xc2cd789a, 0x75a89294, 0xf3c64af7, 0x4a2f20aa, 0x3b4},
@@ -38,7 +51,7 @@ const big_int b[10] = {
   {0xf3d4e711, 0xd8f33418, 0x93ea5c4e, 0x5a702cfa, 0x7589a82b, 0xe8e5b461, 0x44ef7feb, 0xa8c24d42, 0x8c497c68, 0x26f},
   {0x7c240d49, 0xd037cdff, 0x5b569643, 0x6a17b9af, 0x58989008, 0x67dba8, 0x89d9bf02, 0x8a449ebe, 0x9f9d0129, 0x325},
   {0x959f3a51, 0x2e47dc0e, 0xdc6b13ab, 0x1773308c, 0xcc667e97, 0x8d103ed3, 0xcc0e95ee, 0xd9ed17e3, 0xd1020a15, 0x3b9},
-};
+};*/
 
 // c[i] should be a[i] * b[i]
 const big_int c[10] = {
@@ -98,15 +111,19 @@ int main() {
     SB[i] = big_int_to_mnt4_Fq(b[i]);
     SC[i] = big_int_to_mnt4_Fq(c[i]);
     SD[i] = big_int_to_mnt4_Fq(d[i]);
-    if (SA[i] * SB[i] != SC[i]) {
+    if (SA[i] * SB[i] != SA[i]) {
       std::cout << "cpu mul is bad" << std::endl;
-      std::exit(0);
+      (SA[i] * SB[i]).mont_repr.print_hex();
+      SC[i].mont_repr.print_hex();
+      //std::exit(0);
     }
     if (SA[i] + SB[i] != SD[i]) {
       std::cout << "cpu add is bad" << std::endl;
-      std::exit(0);
+      //std::exit(0);
     }
   }
+  SB[0].mont_repr.print_hex();
+  libff::mnt4_Fq::one().mont_repr.print_hex();
 
   // GPU tests
   big_int *d_r, *d_a, *d_b;
@@ -125,7 +142,21 @@ int main() {
     libff::mnt4_Fq R = big_int_to_mnt4_Fq(r[i]);
     if (SD[i] != R) {
       std::cout << "gpu add is bad" << std::endl;
-      std::exit(0);
+      //std::exit(0);
+    }
+  }
+
+  // test subtraction
+  cudaMemcpy(d_a, a, 10 * sizeof(big_int), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_b, b, 10 * sizeof(big_int), cudaMemcpyHostToDevice);
+  cuda_mnt4_Fq_sub_test(10, d_r, d_a, d_b);
+  cudaMemcpy(r, d_r, 10 * sizeof(big_int), cudaMemcpyDeviceToHost);
+
+  for (int i = 0; i < 10; i++) {
+    libff::mnt4_Fq R = big_int_to_mnt4_Fq(r[i]);
+    if (SA[i] - SB[i] != R) {
+      std::cout << "gpu sub is bad" << std::endl;
+      //std::exit(0);
     }
   }
 
@@ -134,9 +165,11 @@ int main() {
   cudaMemcpy(r, d_r, 10 * sizeof(big_int), cudaMemcpyDeviceToHost);
   for (int i = 0; i < 10; i++) {
     libff::mnt4_Fq R = big_int_to_mnt4_Fq(r[i]);
-    if (SC[i] != R) {
+    SA[i].mont_repr.print_hex();
+    R.mont_repr.print_hex();
+    if (SA[i] != R) {
       std::cout << "gpu mul is bad" << std::endl;
-      std::exit(0);
+      //std::exit(0);
     }
   }
 
@@ -144,8 +177,8 @@ int main() {
   libff::mnt4_G1 CA[10];
   libff::mnt4_G1 CB[10];
   for (int i = 0; i < 10; i++) {
-    CA[i] = SA[i] * libff::mnt4_G1::G1_one;
-    CB[i] = SB[i] * libff::mnt4_G1::G1_one;
+    CA[i] = /*SA[i] */ libff::mnt4_G1::G1_one;
+    CB[i] = /*SB[i] */ libff::mnt4_G1::G1_one;
   }
 
   // copy points to GPU
@@ -170,16 +203,26 @@ int main() {
 
   // GPU point addition
   cuda_mnt4_G1 CR[10];
-  cuda_mnt4_G1_add_test(10, d_CR, d_CA, d_CB);
+  cuda_mnt4_G1_add_test(1, d_CR, d_CA, d_CB);
   cudaMemcpy(CR, d_CR, 10 * sizeof(cuda_mnt4_G1), cudaMemcpyDeviceToHost);
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 1; i++) {
     libff::mnt4_Fq X, Y, Z;
     X = big_int_to_mnt4_Fq(CR[i].X);
     Y = big_int_to_mnt4_Fq(CR[i].Y);
     Z = big_int_to_mnt4_Fq(CR[i].Z);
     libff::mnt4_G1 cr(X, Y, Z);
     libff::mnt4_G1 correct = CA[i] + CB[i];
-    if (cr != CA[i] + CB[i]) {
+    std::cout << "test " << i << std::endl;
+    cr.X().mont_repr.print_hex();
+    cr.Y().mont_repr.print_hex();
+    cr.Z().mont_repr.print_hex();
+    correct.X().mont_repr.print_hex();
+    correct.Y().mont_repr.print_hex();
+    correct.Z().mont_repr.print_hex();
+    if (cr != correct) {
+      std::cout << "inequal" << std::endl;
+    }
+    /*if (cr != CA[i] + CB[i]) {
       std::cout << "test " << i << std::endl;
       cr.X().mont_repr.print_hex();
       cr.Y().mont_repr.print_hex();
@@ -189,7 +232,7 @@ int main() {
       correct.Z().mont_repr.print_hex();
       std::cout << "gpu point add is bad" << std::endl;
       std::exit(0);
-    }
+    }*/
   }
 
   return 0;
